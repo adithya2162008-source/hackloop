@@ -1,0 +1,16 @@
+{
+  "name": "VoltShare Community EV Charging",
+  "short_name": "VoltShare",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#070a12",
+  "theme_color": "#10b981",
+  "description": "Peer-to-peer EV charging sharing app with exact kWh billing and nearby discovery.",
+  "icons": [
+    {
+      "src": "assets/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
