@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VoltShare - Community EV Charging Network</title>
+  <meta name="description" content="Peer-to-peer community electric vehicle charging app with exact kWh billing and real-time private station discovery.">
+
+  <!-- Favicon / Logo -->
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+
+  <!-- Web App Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Leaflet Maps CSS (Fallback / Default Engine) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SVG Gradient Definitions -->
+  <svg width="0" height="0" style="position: absolute;">
+    <defs>
+      <linearGradient id="emeraldCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#16a34a" />
+        <stop offset="50%" stop-color="#64748b" />
+        <stop offset="100%" stop-color="#94a3b8" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="app-wrapper">
+
+    <!-- Device Frame Wrapper -->
+    <div class="device-container" id="deviceContainer">
+
+      <!-- ===================================================================
+           1. STARTUP SPLASH SCREEN ANIMATION
+           =================================================================== -->
+      <div class="splash-screen-overlay" id="appSplashScreen">
+        <div class="splash-bg-glow"></div>
+        
+        <div class="splash-logo-container">
+          <div class="splash-energy-ring-1"></div>
+          <div class="splash-energy-ring-2"></div>
+          <img src="assets/logo.jpg" alt="VoltShare Community EV" class="splash-logo-img">
+        </div>
+
+        <h1 class="splash-brand-title">VoltShare</h1>
+        <p class="splash-brand-tagline">Powering Community EV Mobility</p>
+
+        <div class="splash-progress-wrapper">
+          <div class="splash-progress-header">
+            <span id="splashProgressText">INITIALIZING</span>
+            <span id="splashPercentText">0%</span>
+          </div>
+          <div class="splash-progress-track">
+            <div class="splash-progress-fill" id="splashProgressFill"></div>
+          </div>
+          <div class="splash-progress-status" id="splashStatusMsg">Connecting to smart energy grid...</div>
+        </div>
+      </div>
+
+
+      <!-- ===================================================================
+           1.5. HOME / LANDING PAGE (Rich Animations, Hero, Features, Login Access)
+           =================================================================== -->
+      <div class="landing-screen-overlay" id="appLandingScreen">
+        <!-- Floating Ambient Background Lighting -->
+        <div class="landing-ambient-glow glow-1"></div>
+        <div class="landing-ambient-glow glow-2"></div>
+
+        <!-- Landing Top Navigation Bar -->
+        <header class="landing-nav-bar">
+          <div class="landing-brand">
+            <div class="landing-brand-icon">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <span class="landing-brand-text">VoltShare</span>
+          </div>
+
+          <div class="landing-nav-actions">
+            <!-- Theme Toggle Button -->
+            <button class="landing-icon-btn theme-toggle-btn" id="btnThemeToggleLanding" title="Toggle Dark / Light Theme" aria-label="Toggle Theme">
+              <i class="fa-solid fa-moon theme-icon-current"></i>
+            </button>
+            <!-- Direct Login CTA -->
+            <button class="landing-nav-btn" id="btnNavToSignInLanding">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
+            </button>
+          </div>
+        </header>
+
+        <!-- Landing Scrollable Content Body -->
+        <div class="landing-scroll-body">
+          
+          <!-- HERO SECTION -->
+          <section class="landing-hero-section">
+            <div class="landing-badge">
+              <span class="badge-ping-dot"></span>
+              <span>Next-Gen Decentralized EV Network</span>
+            </div>
+
+            <h1 class="landing-hero-title">
+              Charge Anywhere.<br>
+              <span class="gradient-headline">Share Everywhere.</span>
+            </h1>
+
+            <p class="landing-hero-subtitle">
+              Discover private residential wallboxes, plug in with live transparent kWh telemetry, or turn your home charger into a recurring revenue stream.
+            </p>
+
+            <!-- Interactive Animated EV Charging Visualization Stage -->
+            <div class="interactive-charging-stage" id="landingChargingStage" title="Tap to trigger energy pulse!">
+              <div class="stage-backdrop-grid"></div>
+              
+              <div class="stage-charge-status-pill">
+                <span class="pulse-beacon"></span>
+                <span id="stageStatusText">⚡ LIVE OCPP 2.0 CHARGING FLOW</span>
+              </div>
+
+              <!-- Animated Charging Graphic Visual -->
+              <div class="charging-sim-display">
+                
+                <!-- Host Wallbox Node -->
+                <div class="sim-node sim-wallbox">
+                  <div class="node-icon-box">
+                    <i class="fa-solid fa-charging-station"></i>
+                  </div>
+                  <span class="node-label">Solar Wallbox</span>
+                  <span class="node-sub">230V • 11.0 kW</span>
+                </div>
+
+                <!-- Animated Energy Flow Conduit -->
+                <div class="sim-conduit">
+                  <div class="conduit-track"></div>
+                  <div class="energy-particle particle-1"></div>
+                  <div class="energy-particle particle-2"></div>
+                  <div class="energy-particle particle-3"></div>
+                  <div class="energy-zap">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                  </div>
+                </div>
+
+                <!-- EV Vehicle Node -->
+                <div class="sim-node sim-vehicle">
+                  <div class="node-icon-box">
+                    <i class="fa-solid fa-car-side"></i>
+                  </div>
+                  <span class="node-label">Smart EV</span>
+                  <span class="node-sub" id="simBatterySoc">84% • Fast Flow</span>
+                </div>
+
+              </div>
+
+              <!-- Live Telemetry Stream Strip -->
+              <div class="stage-telemetry-strip">
+                <div class="telemetry-pill-mini">
+                  <span class="mini-label">RATE</span>
+                  <span class="mini-val" style="color: var(--accent-emerald-light);">₹120.00 / hour</span>
+                </div>
+                <div class="telemetry-pill-mini">
+                  <span class="mini-label">POWER</span>
+                  <span class="mini-val" style="color: var(--accent-cyan-light);" id="simLivePower">11.2 kW</span>
+                </div>
+                <div class="telemetry-pill-mini">
+                  <span class="mini-label">ENERGY</span>
+                  <span class="mini-val" id="simLiveEnergy">18.4 kWh</span>
+                </div>
+              </div>
+
+              <div class="stage-tap-hint">
+                <i class="fa-solid fa-hand-pointer"></i> Tap stage to pulse energy flow
+              </div>
+            </div>
+
+            <!-- Primary Action CTA Buttons -->
+            <div class="landing-cta-group">
+              <button class="btn-landing-primary" id="btnLandingGetStarted">
+                <span>⚡ Find a Charger & Charge</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </button>
+
+              <button class="btn-landing-secondary" id="btnLandingHost">
+                <i class="fa-solid fa-house-signal"></i>
+                <span>Host Your Home Charger</span>
+              </button>
+            </div>
+          </section>
+
+
+          <!-- KEY FEATURES SHOWCASE -->
+          <section class="landing-features-section">
+            <div class="section-title-wrap">
+              <span class="subhead-pill">WHY VOLTSHARE</span>
+              <h2 class="section-main-heading">Designed for seamless peer-to-peer charging</h2>
+            </div>
+
+            <div class="feature-cards-grid">
+              
+              <div class="feature-card">
+                <div class="feature-card-icon" style="background: rgba(100,116,139,0.15); color: var(--accent-cyan-light);">
+                  <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <h3 class="feature-card-title">Live GPS Radar & Routing</h3>
+                <p class="feature-card-desc">
+                  Find available home wallboxes on interactive Google & OSM maps with filter for CCS2, Type 2, Fast DC, and turn-by-turn navigation.
+                </p>
+              </div>
+
+              <div class="feature-card">
+                <div class="feature-card-icon" style="background: rgba(22,163,74,0.15); color: var(--accent-emerald-light);">
+                  <i class="fa-solid fa-gauge-high"></i>
+                </div>
+                <h3 class="feature-card-title">Live kWh Telemetry & Billing</h3>
+                <p class="feature-card-desc">
+                  Track real-time power draw, voltage, and exact kWh consumption. Automated wallet settlement with instant itemized invoices.
+                </p>
+              </div>
+
+              <div class="feature-card">
+                <div class="feature-card-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-amber);">
+                  <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+                <h3 class="feature-card-title">Monetize Your Home Wallbox</h3>
+                <p class="feature-card-desc">
+                  Set your custom tariff rates per kWh, establish operating hours, and receive instant direct payments when drivers charge.
+                </p>
+              </div>
+
+              <div class="feature-card">
+                <div class="feature-card-icon" style="background: rgba(52, 211, 153, 0.15); color: #4ade80;">
+                  <i class="fa-solid fa-solar-panel"></i>
+                </div>
+                <h3 class="feature-card-title">Solar & 100% Green Energy</h3>
+                <p class="feature-card-desc">
+                  Filter verified rooftop solar hosts for zero-carbon driving and claim green charging rewards with every completed session.
+                </p>
+              </div>
+
+            </div>
+          </section>
+
+
+          <!-- INTERACTIVE HOST EARNINGS ESTIMATOR -->
+          <section class="landing-calculator-section">
+            <div class="calc-card">
+              <div class="calc-header">
+                <div class="calc-tag">💰 EARNINGS ESTIMATOR</div>
+                <h3 class="calc-title">How much could your wallbox earn?</h3>
+                <p class="calc-desc">Calculate potential monthly passive income by sharing your driveway charger with EV drivers.</p>
+              </div>
+
+              <div class="calc-body">
+                <div class="calc-slider-group">
+                  <div class="slider-header">
+                    <span>Charging Hours Shared / Day</span>
+                    <strong id="calcHoursLabel" style="color: var(--accent-cyan-light);">4 Hours/day</strong>
+                  </div>
+                  <input type="range" id="calcHoursSlider" class="limit-slider" min="1" max="12" step="1" value="4">
+                </div>
+
+                <div class="calc-slider-group">
+                  <div class="slider-header">
+                    <span>Your Tariff Rate</span>
+                    <strong id="calcRateLabel" style="color: var(--accent-emerald-light);">₹15.00 / kWh</strong>
+                  </div>
+                  <input type="range" id="calcRateSlider" class="limit-slider" min="8" max="30" step="1" value="15">
+                </div>
+
+                <div class="calc-result-box">
+                  <div class="result-text-col">
+                    <span class="result-label">Estimated Monthly Revenue</span>
+                    <div class="result-number" id="calcMonthlyEarnings">₹19,800</div>
+                    <span class="result-sub" id="calcKwhTotal">~1,320 kWh delivered / month</span>
+                  </div>
+                  <button class="btn-primary" id="btnCalcHostCTA" style="padding: 10px 16px; font-size: 0.85rem; width: auto;">
+                    List My Charger &rarr;
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+
+          <!-- 3-STEP "HOW IT WORKS" -->
+          <section class="landing-steps-section">
+            <div class="section-title-wrap">
+              <span class="subhead-pill">SIMPLE PROCESS</span>
+              <h2 class="section-main-heading">How VoltShare works</h2>
+            </div>
+
+            <div class="steps-container">
+              
+              <div class="step-card">
+                <div class="step-num">01</div>
+                <div class="step-content">
+                  <h4 class="step-title">Discover Nearby Chargers</h4>
+                  <p class="step-desc">Open the live GPS map, filter by connector type or solar power, and view host rates & reviews.</p>
+                </div>
+              </div>
+
+              <div class="step-card">
+                <div class="step-num">02</div>
+                <div class="step-content">
+                  <h4 class="step-title">Plug In & Authenticate</h4>
+                  <p class="step-desc">Arrive at the host driveway and tap to start. Smart telemetry synchronizes live voltage and power draw.</p>
+                </div>
+              </div>
+
+              <div class="step-card">
+                <div class="step-num">03</div>
+                <div class="step-content">
+                  <h4 class="step-title">Track & Auto-Pay</h4>
+                  <p class="step-desc">Watch energy flow in real-time. Unplug anytime; cost is deducted from your wallet with exact kWh billing.</p>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+
+
+          <!-- BOTTOM FOOTER CTA -->
+          <footer class="landing-footer-cta">
+            <div class="footer-cta-card">
+              <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 6px;">Join the charging network</h3>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 16px;">Sign in to find chargers, share your wallbox, or track your earnings.</p>
+              <button class="btn-landing-primary" id="btnLandingFooterLaunch" style="width: auto; padding: 12px 28px;">
+                Open App
+              </button>
+            </div>
+            <div class="landing-copyright">
+              © 2026 VoltShare Network • Decentralized Community EV Mobility
+            </div>
+          </footer>
+
+        </div>
+      </div>
+
+
+      <!-- ===================================================================
+           2. AUTHENTICATION / LOGIN WINDOW
+           =================================================================== -->
+      <div class="auth-screen-overlay" id="appAuthScreen" style="display: none;">
+        
+        <!-- Back to Home Button -->
+        <button class="btn-back-to-home" id="btnBackFromAuthToHome" title="Return to Home Screen">
+          <i class="fa-solid fa-arrow-left"></i> <span>Back to Home</span>
+        </button>
+
+        <div class="auth-header-card">
+          <img src="assets/logo.jpg" alt="VoltShare Logo" class="auth-logo-badge">
+          <h2 style="font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em;">Welcome to VoltShare</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">The Peer-to-Peer EV Charging Network</p>
+        </div>
+
+        <!-- Real Google Account Sign-In with Firebase -->
+        <button type="button" class="btn-google-auth" id="btnGoogleSignIn">
+          <svg width="18" height="18" viewBox="0 0 24 24" style="flex-shrink:0;">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Sign In with Google Account</span>
+        </button>
+
+        <!-- Quick Demo Profiles -->
+        <div class="demo-account-pills">
+          <span style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">⚡ Quick 1-Tap Demo Access:</span>
+          <button class="demo-pill-btn" id="btnDemoLoginDriver">
+            <span>🚗 <strong>Demo Driver (Alex)</strong></span>
+            <span style="color: var(--accent-cyan-light); font-size: 0.72rem;">Seek Chargers &rarr;</span>
+          </button>
+          <button class="demo-pill-btn" id="btnDemoLoginHost">
+            <span>🏠 <strong>Demo Host (Marcus)</strong></span>
+            <span style="color: var(--accent-emerald-light); font-size: 0.72rem;">Manage Wallbox &rarr;</span>
+          </button>
+        </div>
+
+        <div class="divider-with-text">
+          <span>Or sign in with email address</span>
+        </div>
+
+        <form id="authLoginForm" style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="loginEmailInput" class="form-input" placeholder="e.g. yourname@gmail.com or driver@voltshare.io" required autocomplete="email">
+            <span id="loginEmailError" style="display:none; color: #c0392b; font-size: 0.75rem; margin-top: 4px;"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPasswordInput" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+            <div id="loginAuthError" style="display:none; color: #ef4444; font-size: 0.78rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 6px; padding: 8px 10px; margin-top: 6px; line-height: 1.4;"></div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top: 8px;" id="btnEmailLoginSubmit">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In to Account
+          </button>
+        </form>
+
+        <p style="text-align: center; font-size: 0.72rem; color: var(--text-muted); margin-top: 24px;">
+          By logging in, you agree to VoltShare's Decentralized Charging Terms.
+        </p>
+      </div>
+
+
+      <!-- ===================================================================
+           3. ROLE / PERSONA SELECTION WINDOW (Driver vs Host)
+           =================================================================== -->
+      <div class="role-screen-overlay" id="appRoleScreen" style="display: none;">
+        
+        <!-- Back to Home Button -->
+        <button class="btn-back-to-home" id="btnBackFromRoleToHome" title="Return to Home Screen">
+          <i class="fa-solid fa-arrow-left"></i> <span>Back to Home</span>
+        </button>
+
+        <div style="text-align: center;">
+          <h2 style="font-size: 1.35rem; font-weight: 800;">Select Your Profile Mode</h2>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px;">
+            How would you like to use VoltShare today?
+          </p>
+        </div>
+
+        <div class="role-selection-grid">
+          <div class="persona-card" id="personaCardDriver">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div class="persona-icon-badge driver-badge-icon">
+                <i class="fa-solid fa-car-side"></i>
+              </div>
+              <span class="brand-tag" style="background: rgba(100,116,139,0.2); color: var(--accent-cyan-light); border-color: rgba(100,116,139,0.4);">
+                EV Customer
+              </span>
+            </div>
+            <div>
+              <h3 class="persona-card-title">
+                I am an EV Driver
+                <i class="fa-solid fa-circle-arrow-right" style="color: var(--accent-cyan);"></i>
+              </h3>
+              <p class="persona-card-desc">
+                Find nearby private & community chargers on the live GPS map, navigate, monitor real-time energy flow, and pay exact rates per kWh.
+              </p>
+            </div>
+            <div class="persona-feature-tags">
+              <span class="p-tag">📍 Live GPS Radar</span>
+              <span class="p-tag">🧭 Turn-by-Turn Route</span>
+              <span class="p-tag">⚡ kWh Billing</span>
+            </div>
+          </div>
+
+          <div class="persona-card" id="personaCardHost">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div class="persona-icon-badge host-badge-icon">
+                <i class="fa-solid fa-house-signal"></i>
+              </div>
+              <span class="brand-tag">
+                Property Host
+              </span>
+            </div>
+            <div>
+              <h3 class="persona-card-title">
+                I am a Charger Host
+                <i class="fa-solid fa-circle-arrow-right" style="color: var(--accent-emerald);"></i>
+              </h3>
+              <p class="persona-card-desc">
+                Share your home, garage, or commercial charger with the public. Set your custom kWh tariffs, monitor power draw, and collect revenue automatically.
+              </p>
+            </div>
+            <div class="persona-feature-tags">
+              <span class="p-tag">💰 Automated Payouts</span>
+              <span class="p-tag">📊 Tariff & kWh Config</span>
+              <span class="p-tag">☀️ Solar Green Badge</span>
+            </div>
+          </div>
+        </div>
+
+        <p style="text-align: center; font-size: 0.72rem; color: var(--text-muted);">
+          You can switch between Driver and Host modes anytime from the top bar.
+        </p>
+      </div>
+
+
+
+      <!-- App Header -->
+      <header class="app-header">
+        <div class="brand-group" id="brandHeaderGroup" title="VoltShare EV Network">
+          <img src="assets/logo.jpg" alt="VoltShare Logo" class="header-logo-img">
+          <div>
+            <div class="brand-title">VoltShare</div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Header Live Wallet Balance Pill -->
+          <div id="headerWalletPill" style="display: flex; align-items: center; gap: 6px; background: rgba(22,163,74,0.12); border: 1px solid rgba(22,163,74,0.3); border-radius: var(--radius-full); padding: 4px 10px; font-size: 0.75rem; font-weight: 700; color: var(--accent-emerald-light); cursor: pointer;" title="VoltShare Wallet Balance (Tap to open wallet)">
+            <i class="fa-solid fa-wallet"></i>
+            <span id="headerWalletBalanceDisplay">₹1,500.00</span>
+          </div>
+
+          <!-- Return to Landing / Home button -->
+          <button class="btn-icon" id="btnNavHomeHeader" title="Go to Home / Landing Page">
+            <i class="fa-solid fa-house" style="color: var(--text-secondary);"></i>
+          </button>
+
+          <!-- Theme Toggle Button -->
+          <button class="btn-icon theme-toggle-btn" id="btnThemeToggleHeader" title="Toggle Dark / Light Theme" aria-label="Toggle Theme">
+            <i class="fa-solid fa-moon theme-icon-current"></i>
+          </button>
+
+          <!-- Notification Bell Button -->
+          <button class="btn-icon" id="btnOpenNotifications" title="Notifications Center" aria-label="Notifications" style="position: relative;">
+            <i class="fa-regular fa-bell" id="notifBellIcon"></i>
+            <span class="notif-badge-pill" id="notifBadgeCount" style="display: none;">0</span>
+          </button>
+
+          <!-- Profile Button -->
+          <button class="btn-icon" id="btnOpenProfileHeader" title="My Profile">
+            <i class="fa-solid fa-circle-user" style="color: var(--accent-cyan-light);"></i>
+          </button>
+
+          <button class="btn-icon" id="btnToggleViewMode" title="Toggle Fullscreen / Mobile Frame">
+            <i class="fa-solid fa-expand"></i>
+          </button>
+        </div>
+      </header>
+
+
+      <!-- ===================================================================
+           MAIN APP CONTENT
+           =================================================================== -->
+      <main class="app-content">
+
+        <!-- =================================================================
+             DRIVER VIEW 1: Explore / Nearby Map View
+             ================================================================= -->
+        <section class="tab-panel active" id="tab-explore">
+          <div class="map-view-container">
+
+            <!-- Turn-by-Turn GPS Navigation HUD with Voice Direction System -->
+            <div class="nav-guidance-hud" id="navGuidanceHud">
+              <div style="display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; cursor: pointer;" id="navGuidanceTextBlock" title="Click to replay voice instruction">
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--accent-emerald); display: flex; align-items: center; justify-content: center; color: #070a12; font-size: 1.1rem; font-weight: 800; flex-shrink: 0;" id="navTurnIconWrap">
+                  <i class="fa-solid fa-location-arrow" id="navTurnIcon"></i>
+                </div>
+                <div style="overflow: hidden;">
+                  <div style="font-size: 0.82rem; font-weight: 800; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="navNextTurn">Navigating to Station...</div>
+                  <div style="font-size: 0.72rem; color: #a7f3d0;" id="navEtaDetails">Calculating driving route...</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                <button class="btn-icon btn-nav-voice" id="btnNavVoiceToggle" style="background: rgba(22,163,74,0.25); border-color: var(--accent-emerald); color: #4ade80;" title="Voice Guidance (Click to Mute / Unmute)">
+                  <i class="fa-solid fa-volume-high" id="navVoiceIcon"></i>
+                </button>
+                <button class="btn-icon" id="btnNavRepeatVoice" style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); color: white;" title="Replay Last Voice Instruction">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <a id="btnNavOpenGoogleMapsApp" href="#" target="_blank" class="btn-icon" style="background: rgba(100,116,139,0.3); border-color: var(--accent-cyan); color: var(--accent-cyan-light); text-decoration: none;" title="Open in Google Maps / GPS Navigation">
+                  <i class="fa-solid fa-diamond-turn-right"></i>
+                </a>
+                <button class="btn-icon" id="btnEndNavigation" style="background: rgba(192,57,43,0.3); border-color: rgba(192,57,43,0.5); color: #f0a49e;" title="End Navigation">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Floating Search & Quick Filters -->
+            <div class="map-floating-overlay" id="mapSearchOverlay">
+              <div class="search-box-card">
+                <i class="fa-solid fa-magnifying-glass" style="color: var(--accent-cyan);"></i>
+                <input type="text" id="stationSearchInput" class="search-input" placeholder="Search hosts, solar wallboxes, CCS2, street...">
+                <button class="search-action-btn" title="Filter"><i class="fa-solid fa-sliders"></i></button>
+              </div>
+
+              <div class="filter-pills-row">
+                <button class="filter-pill active" data-filter="all"><i class="fa-solid fa-globe"></i> All Stations</button>
+                <button class="filter-pill" data-filter="company" style="border-color: rgba(192,57,43,0.4);"><i class="fa-solid fa-charging-station" style="color: #c0392b;"></i> Company Hubs</button>
+                <button class="filter-pill" data-filter="community"><i class="fa-solid fa-house-user" style="color: var(--accent-emerald-light);"></i> Community Hosts</button>
+                <button class="filter-pill" data-filter="available"><i class="fa-solid fa-circle-check"></i> Available</button>
+                <button class="filter-pill" data-filter="fast"><i class="fa-solid fa-bolt"></i> Fast (50kW+)</button>
+                <button class="filter-pill" data-filter="solar"><i class="fa-solid fa-sun"></i> Solar ☀️</button>
+              </div>
+            </div>
+
+            <!-- Leaflet Map Canvas -->
+            <div id="leafletMap"></div>
+
+            <!-- Google Maps Canvas Container -->
+            <div id="googleMapCanvas" style="display: none; width: 100%; height: 100%; min-height: 400px; background: #080c14;"></div>
+
+            <!-- Active Map Engine Indicator Pill -->
+            <div class="map-engine-badge" id="mapEngineBadge" title="Click to configure Google Maps">
+              <i class="fa-solid fa-map"></i> <span id="mapEngineLabel">OpenStreetMap Dark</span>
+            </div>
+
+            <!-- Floating Active Reservation HUD Banner -->
+            <div class="active-reservation-hud" id="activeReservationHud" style="display: none;">
+              <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                  <div class="resv-hud-icon">
+                    <i class="fa-solid fa-clock fa-spin" style="--fa-animation-duration: 4s;"></i>
+                  </div>
+                  <div style="min-width: 0;">
+                    <div style="font-size: 0.78rem; font-weight: 800; color: var(--accent-amber); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="resvHudStationTitle">
+                      Reserved: Station
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-secondary);" id="resvHudTimer">
+                      Hold expires in: <span style="font-family: var(--font-mono); font-weight: 700; color: #ffffff;" id="resvCountdownDisplay">59:45</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                  <button class="btn-primary" id="btnResvStartCharging" style="padding: 6px 12px; font-size: 0.75rem; font-weight: 800; background: var(--accent-emerald);">
+                    <i class="fa-solid fa-bolt"></i> Plug In
+                  </button>
+                  <button class="btn-icon" id="btnResvCancel" style="padding: 6px 8px; width: auto; font-size: 0.72rem; color: #e07068; border-color: rgba(192,57,43,0.35);" title="Cancel Reservation">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating Map Actions -->
+            <div class="map-floating-controls">
+              <button class="map-fab" id="btnLocateMe" title="Find My Exact GPS Location">
+                <i class="fa-solid fa-location-crosshairs"></i>
+              </button>
+            </div>
+
+            <!-- Bottom Discovery Drawer (Minimized / Peek mode by default for Maximum Map Visibility) -->
+            <div class="bottom-discovery-drawer" id="bottomDiscoveryDrawer">
+              <div class="drawer-handle-bar" id="drawerHandleBar" title="Swipe or tap to expand/collapse stations list">
+                <div class="drawer-pill-handle"></div>
+              </div>
+
+              <div class="drawer-header" id="drawerHeaderToggle" title="Tap to expand or minimize stations list">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span class="drawer-title">Nearby Chargers</span>
+                  <span class="drawer-count-badge" id="stationCountBadge">6</span>
+                </div>
+                <div class="drawer-toggle-btn">
+                  <i class="fa-solid fa-chevron-up" id="drawerExpandChevron"></i>
+                </div>
+              </div>
+
+              <div class="nearby-stations-list" id="nearbyStationsList">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- =================================================================
+             DRIVER VIEW 2: Live Charging Session & Smart Meter
+             ================================================================= -->
+        <section class="tab-panel" id="tab-charging">
+          <div class="charging-screen-container">
+
+            <!-- NO ACTIVE SESSION -->
+            <div id="noActiveChargingView" style="display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 45px 20px; gap: 16px;">
+              <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(22,163,74,0.1); display: flex; align-items: center; justify-content: center; border: 1px dashed var(--accent-emerald);">
+                <i class="fa-solid fa-plug-circle-bolt" style="font-size: 2.2rem; color: var(--accent-emerald);"></i>
+              </div>
+              <h3 style="font-size: 1.1rem; font-weight: 700;">No Active Session</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted); max-width: 290px;">
+                Find a charger on the map, pick your time slot, and pay upfront to begin.
+              </p>
+              <button class="btn-primary" onclick="window.app.switchTab('tab-explore')">
+                <i class="fa-solid fa-map-location-dot"></i> Browse Community Map
+              </button>
+            </div>
+
+            <!-- ACTIVE SESSION — Time-Slot Countdown -->
+            <div id="activeChargingView" style="display: flex; flex-direction: column; gap: 14px;">
+
+              <!-- Station bar -->
+              <div style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                <i class="fa-solid fa-plug-circle-bolt" style="color: var(--accent-emerald); font-size: 1.1rem;"></i>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="liveStationName">Station Name</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);" id="liveStationAddress">Address</div>
+                </div>
+                <span id="sessionStatusPill" style="font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full); background: rgba(22,163,74,0.15); color: var(--accent-emerald); white-space: nowrap;">ACTIVE</span>
+              </div>
+
+              <!-- Countdown Clock -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 28px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase;">Time Remaining</div>
+                <div id="sessionCountdownDisplay" style="font-size: 3.2rem; font-weight: 700; font-family: var(--font-mono); color: var(--text-primary); line-height: 1; letter-spacing: -0.02em;">--:--</div>
+                <div style="display: flex; align-items: center; gap: 16px; margin-top: 4px;">
+                  <div style="text-align: center;">
+                    <div style="font-size: 0.62rem; color: var(--text-muted);">Started</div>
+                    <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);" id="sessionStartTimeLabel">&#8212;</div>
+                  </div>
+                  <div style="width: 1px; height: 22px; background: var(--border-subtle);"></div>
+                  <div style="text-align: center;">
+                    <div style="font-size: 0.62rem; color: var(--text-muted);">Ends at</div>
+                    <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);" id="sessionEndTimeLabel">&#8212;</div>
+                  </div>
+                  <div style="width: 1px; height: 22px; background: var(--border-subtle);"></div>
+                  <div style="text-align: center;">
+                    <div style="font-size: 0.62rem; color: var(--text-muted);">Slot</div>
+                    <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);" id="sessionSlotLabel">&#8212;</div>
+                  </div>
+                </div>
+                <!-- Progress bar -->
+                <div style="width: 100%; height: 4px; background: var(--border-subtle); border-radius: 2px; margin-top: 14px; overflow: hidden;">
+                  <div id="sessionProgressBar" style="height: 100%; background: var(--accent-emerald); border-radius: 2px; width: 0%; transition: width 1s linear;"></div>
+                </div>
+              </div>
+
+              <!-- Payment summary -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.06em;">Payment Summary</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                  <span style="color: var(--text-secondary);">Session fee</span>
+                  <span style="font-weight: 600;" id="recSessionFee">&#8212;</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                  <span style="color: var(--text-secondary);">Platform (10%)</span>
+                  <span style="color: var(--text-muted);" id="recPlatformCut">&#8212;</span>
+                </div>
+                <div style="border-top: 1px solid var(--border-subtle); padding-top: 8px; display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700;">
+                  <span>Total (paid upfront)</span>
+                  <span style="color: var(--accent-emerald);" id="recSessionTotal">&#8212;</span>
+                </div>
+                <div style="font-size: 0.68rem; color: var(--text-muted);">Wallet was deducted when session started</div>
+              </div>
+
+              <!-- Action -->
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-icon" id="btnTest1MinTimer" style="width: auto; padding: 0 14px; font-size: 0.76rem; border-color: var(--accent-amber); color: var(--accent-amber); white-space: nowrap; font-weight: 700; background: rgba(245, 158, 11, 0.12);" title="Fast-forward session to 1-minute test">
+                  ⏱️ 1-Min Fast Test
+                </button>
+                <button class="btn-danger" id="btnStopCharging" style="flex: 1;">
+                  <i class="fa-solid fa-stop"></i> End Session Early
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- =================================================================
+             HOST VIEW 1: Host Dashboard & Earnings Analytics
+             ================================================================= -->
+        <section class="tab-panel" id="tab-host-dashboard">
+          <div class="host-screen-container">
+
+            <div class="host-stats-banner">
+              <div class="host-stats-header">
+                <div>
+                  <span class="host-stats-title">Host Earned Balance</span>
+                  <div class="host-earnings-total" id="hostEarningsValue">₹2,840.50</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                  <button type="button" class="btn-primary" id="btnHostWithdraw" style="padding: 5px 14px; font-size: 0.75rem; font-weight: 700; border-radius: var(--radius-full); background: #16a34a; border: none; color: #ffffff; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 6px rgba(22,163,74,0.3);">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Withdraw
+                  </button>
+                  <label class="switch" title="Charger Online Toggle">
+                    <input type="checkbox" id="hostOnlineToggle" checked>
+                    <span class="slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="host-quick-metrics">
+                <div class="metric-box">
+                  <div class="metric-box-num" id="hostKwhValue">0.0 kWh</div>
+                  <div class="metric-box-label">Energy Shared</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-num" id="hostDriversServedValue">0</div>
+                  <div class="metric-box-label">Drivers Served</div>
+                </div>
+                <div class="metric-box">
+                  <div class="metric-box-num" id="hostRatingValue" style="color: var(--accent-cyan-light); font-size: 0.95rem;">New Host</div>
+                  <div class="metric-box-label">Host Rating</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Smart Grid Telemetry Monitor for Host -->
+            <div class="host-grid-monitor-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Wallbox Grid</span>
+                <span style="font-size: 0.68rem; color: var(--accent-emerald); font-weight: 600;" class="status-indicator-badge status-available">OCPP 2.0</span>
+              </div>
+              <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 6px; margin-top: 6px; align-items: end;">
+                <div class="telemetry-card" style="padding: 8px 10px; text-align: left;">
+                  <span class="telem-label">Voltage</span>
+                  <span style="font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono); display: block;">234 V</span>
+                </div>
+                <div class="telemetry-card" style="padding: 7px 8px; text-align: center;">
+                  <span class="telem-label">Load</span>
+                  <span style="font-size: 0.88rem; font-weight: 700; font-family: var(--font-mono); color: var(--accent-cyan-light); display: block;">16.0 A</span>
+                </div>
+                <div class="telemetry-card" style="padding: 7px 8px; text-align: center;">
+                  <span class="telem-label">Solar</span>
+                  <span style="font-size: 0.88rem; font-weight: 700; font-family: var(--font-mono); color: var(--accent-emerald-light); display: block;">85%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-header">
+              <span class="section-title">My Listed Chargers</span>
+              <button class="btn-primary btn-add-point-compact" id="btnOpenHostWizard" style="padding: 4px 10px; font-size: 0.72rem; border-radius: var(--radius-full); gap: 4px; height: 26px;">
+                <i class="fa-solid fa-plus" style="font-size: 0.65rem;"></i> Add Point
+              </button>
+            </div>
+
+            <div id="myHostedChargersList" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Populated dynamically -->
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- =================================================================
+             HOST VIEW 2: Host Incoming Bookings & Grid Inquiries
+             ================================================================= -->
+        <section class="tab-panel" id="tab-host-inquiries">
+          <div style="padding: 18px 18px 30px; display: flex; flex-direction: column; gap: 16px;">
+            <div class="section-header">
+              <span class="section-title">Incoming Driver Sessions & Inquiries</span>
+            </div>
+
+            <div id="hostInquiriesContainer" style="display: flex; flex-direction: column; gap: 12px;">
+              <!-- Populated dynamically: real driver bookings/sessions or clean empty-state -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- =================================================================
+             COMMON VIEW: Wallet & Activity History
+             ================================================================= -->
+        <section class="tab-panel" id="tab-wallet">
+          <div style="padding: 18px 18px 30px; display: flex; flex-direction: column; gap: 16px;">
+            
+            <div class="wallet-balance-card">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.78rem; font-weight: 700; color: var(--accent-cyan-light); text-transform: uppercase;">
+                  <i class="fa-solid fa-wallet"></i> VoltShare Wallet Balance
+                </span>
+                <span style="font-size: 0.7rem; background: rgba(100,116,139,0.2); padding: 3px 8px; border-radius: 4px; color: white;">Auto-Debit Active</span>
+              </div>
+              <div class="wallet-balance-num" id="walletBalanceDisplay">₹1,500.00</div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn-primary" id="btnTopUpWallet" style="padding: 10px; font-size: 0.8rem;">
+                  <i class="fa-solid fa-plus"></i> Top Up Balance
+                </button>
+                <button class="btn-icon" style="width: auto; padding: 0 14px; border-radius: var(--radius-md); font-size: 0.78rem;" id="btnPaymentMethods">
+                  <i class="fa-solid fa-credit-card" style="margin-right: 6px;"></i> Cards / UPI
+                </button>
+              </div>
+            </div>
+
+            <div class="section-header">
+              <span class="section-title">Transaction History</span>
+              <button class="btn-icon" id="btnRefreshTxHistory" style="width:auto;padding:0 12px;border-radius:var(--radius-md);font-size:0.78rem;" title="Refresh from SQL DB">
+                <i class="fa-solid fa-rotate-right" style="margin-right:5px;"></i>Refresh
+              </button>
+            </div>
+
+            <div id="sqlTransactionsList" style="display:flex;flex-direction:column;gap:12px;">
+              <!-- Populated dynamically from SQL DB -->
+              <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:0.8rem;">
+                <i class="fa-solid fa-database" style="font-size:1.5rem;margin-bottom:8px;display:block;opacity:0.4;"></i>
+                Loading transactions from SQL database...
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        <!-- =================================================================
+             COMMON VIEW: User Profile & Connected Vehicle Details (Direct SQL DB)
+             ================================================================= -->
+        <section class="tab-panel" id="tab-profile">
+          <div style="padding: 18px 18px 30px; display: flex; flex-direction: column; gap: 16px;">
+
+
+            <!-- Profile & Personal Details Form -->
+            <form id="userProfileDetailsForm" style="display: flex; flex-direction: column; gap: 14px;">
+              
+              <!-- Mode Setup Banner -->
+              <div id="profileModeBanner" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: var(--radius-md); background: rgba(100,116,139,0.12); border: 1px solid rgba(100,116,139,0.3);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span id="profileModeBannerIcon" style="font-size: 1.3rem;">🚗</span>
+                  <div>
+                    <div id="profileModeBannerTitle" style="font-size: 0.88rem; font-weight: 800; color: var(--text-primary);">Driver Profile Setup</div>
+                    <div id="profileModeBannerSubtitle" style="font-size: 0.72rem; color: var(--text-muted);">Please complete all details below before entering the network</div>
+                  </div>
+                </div>
+                <span id="profileModeBannerTag" style="font-size: 0.68rem; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; background: rgba(100,116,139,0.2); color: var(--accent-cyan-light);">Step 1 of 1</span>
+              </div>
+
+              <!-- 1. Personal Info Card -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">
+                    <i class="fa-solid fa-user" style="color: var(--accent-cyan); margin-right: 6px;"></i> Personal Information
+                  </span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Full Name <span style="color:#c0392b;">*</span></label>
+                  <input type="text" id="profileFullName" class="form-input" placeholder="e.g. Alex Vance" required>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label">Email Address <span style="color:#c0392b;">*</span></label>
+                    <input type="email" id="profileEmail" class="form-input" placeholder="name@voltshare.io" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Phone Number <span style="color:#c0392b;">*</span></label>
+                    <input type="text" id="profilePhone" class="form-input" placeholder="+91 98450 12345" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Role Preference <span style="color:#c0392b;">*</span></label>
+                  <select id="profileRolePreference" class="form-select">
+                    <option value="driver">EV Driver (Find & Book Chargers)</option>
+                    <option value="host">Charger Host (List & Earn from Wallbox)</option>
+                    <option value="both">Both (Driver & Host Combined)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 2. EV Vehicle & Battery Details Card (Driver Mode) -->
+              <div id="cardProfileVehicleDetails" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">
+                    <i class="fa-solid fa-car-battery" style="color: var(--accent-emerald-light); margin-right: 6px;"></i> EV Vehicle Specifications (Driver)
+                  </span>
+                </div>
+
+                <!-- Database Vehicle 3 Category Options Section -->
+                <div style="background: var(--bg-card); border: 1px dashed rgba(100,116,139,0.3); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <label class="form-label" style="margin-bottom: 0; color: var(--accent-cyan-light); font-weight: 600; font-size: 0.78rem;">
+                      <i class="fa-solid fa-layer-group" style="margin-right: 6px; color: var(--accent-cyan);"></i> Choose Vehicle Category
+                    </label>
+                    <span style="font-size: 0.68rem; color: var(--text-muted);">Click option to choose model</span>
+                  </div>
+
+                  <!-- 3 Category Options -->
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                    <!-- Option 1: 2-Wheeler -->
+                    <button type="button" class="vehicle-cat-btn" data-category="2w" style="background: var(--bg-secondary); border: 1px solid rgba(167, 139, 250, 0.4); border-radius: var(--radius-md); padding: 10px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s ease;">
+                      <i class="fa-solid fa-motorcycle" style="font-size: 1.25rem; color: #a78bfa;"></i>
+                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary);">2-Wheeler</span>
+                      <span style="font-size: 0.63rem; color: var(--text-muted);">Scooters & Bikes</span>
+                    </button>
+
+                    <!-- Option 2: 4-Wheeler -->
+                    <button type="button" class="vehicle-cat-btn" data-category="4w" style="background: var(--bg-secondary); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: var(--radius-md); padding: 10px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s ease;">
+                      <i class="fa-solid fa-car" style="font-size: 1.25rem; color: #94a3b8;"></i>
+                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary);">4-Wheeler</span>
+                      <span style="font-size: 0.63rem; color: var(--text-muted);">Standard EVs</span>
+                    </button>
+
+                    <!-- Option 3: Luxury -->
+                    <button type="button" class="vehicle-cat-btn" data-category="lux" style="background: var(--bg-secondary); border: 1px solid rgba(192,57,43,0.4); border-radius: var(--radius-md); padding: 10px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: all 0.2s ease;">
+                      <i class="fa-solid fa-gem" style="font-size: 1.25rem; color: #c0392b;"></i>
+                      <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-primary);">Luxury</span>
+                      <span style="font-size: 0.63rem; color: var(--text-muted);">Premium & Sports</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Electric Vehicle Model <span style="color:#c0392b;">*</span></label>
+                  <input type="text" id="profileEvModel" class="form-input" placeholder="e.g. Tesla Model Y, Tata Nexon EV, MG ZS EV">
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label">Battery Capacity (kWh) <span style="color:#c0392b;">*</span></label>
+                    <input type="number" id="profileBatteryCapacity" class="form-input" step="0.1" placeholder="75.0">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Vehicle License Plate <span style="color:#c0392b;">*</span></label>
+                    <input type="text" id="profilePlateNumber" class="form-input" placeholder="">
+                  </div>
+                </div>
+              </div>
+
+              <!-- 3. Host Payout & Banking Details Card (Host Mode) -->
+              <div id="cardProfileHostDetails" style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                  <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">
+                    <i class="fa-solid fa-building-columns" style="color: var(--accent-amber); margin-right: 6px;"></i> Host Settlement & Payout Setup (Host)
+                  </span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Host Business / Display Name <span style="color:#c0392b;">*</span></label>
+                  <input type="text" id="profileHostDisplayName" class="form-input" placeholder="e.g. GreenHaven Home Wallbox">
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label">Payout UPI ID (Instant Transfer) <span style="color:#c0392b;">*</span></label>
+                    <input type="text" id="profileHostUpi" class="form-input" placeholder="name@okhdfcbank">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Bank Account Number <span style="color:#c0392b;">*</span></label>
+                    <input type="text" id="profileHostBankAcc" class="form-input" placeholder="**** **** 4892">
+                  </div>
+                </div>
+
+                <!-- Charger & Wallbox Setup Photos (Host Mode Only - Min 3, Max 5 required) -->
+                <div style="border-top: 1px dashed var(--border-subtle); padding-top: 12px; display: flex; flex-direction: column; gap: 10px;" id="profileHostPhotosSection">
+                  <div>
+                  <label class="form-label" style="margin-bottom: 2px;">
+                    Charger &amp; Wallbox Photos <span style="color:#c0392b;">*</span>
+                  </label>
+                  <div style="font-size: 0.70rem; color: var(--text-muted); margin-top: 2px;">
+                    3&#8211;5 required &nbsp;&middot;&nbsp;
+                    <span id="profilePhotosCountBadge" style="font-weight: 700;">0 / 5</span>
+                  </div>
+                </div>
+
+                  <!-- Upload Dropzone -->
+                  <div id="profilePhotoDropzone" style="border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 14px; background: var(--bg-secondary); cursor: pointer; transition: border-color 0.2s ease; display: flex; align-items: center; gap: 12px;">
+                    <input type="file" id="profileChargerPhotoInput" accept="image/*" multiple style="display: none;">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.2rem; color: var(--accent-emerald); flex-shrink: 0;"></i>
+                    <div>
+                      <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Upload charger photos</div>
+                      <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">PNG, JPG, WebP &nbsp;&middot;&nbsp; Charger setup only</div>
+                    </div>
+                    <span style="margin-left: auto; font-size: 0.72rem; font-weight: 700; color: var(--accent-emerald); white-space: nowrap;">Browse</span>
+                  </div>
+
+                  <!-- Preview Grid -->
+                  <div id="profilePhotosGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-top: 4px;"></div>
+                </div>
+              </div>
+
+              <!-- 4. Primary Base Location Card -->
+              <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                  <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary);">
+                    Base Location
+                  </span>
+                  <span id="profileGpsStatus" style="font-size: 0.68rem; color: var(--text-muted);">GPS ready</span>
+                </div>
+
+                <div class="form-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label class="form-label" style="margin-bottom: 0;">Street Address / Area <span style="color:#c0392b;">*</span></label>
+                  </div>
+                  <input type="text" id="profileAddress" class="form-input" placeholder="e.g. 100 Feet Rd, Indiranagar, Bengaluru" required>
+                </div>
+
+                <div class="form-row-2">
+                  <div class="form-group">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" id="profileLat" class="form-input" step="any" placeholder="12.9716">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" id="profileLng" class="form-input" step="any" placeholder="77.5946">
+                  </div>
+                </div>
+
+                <div>
+                  <button type="button" id="btnProfilePinLocation" style="width: 100%; padding: 10px; background: rgba(22,163,74,0.15); border: 1.5px solid var(--accent-emerald); color: var(--accent-emerald-light); font-size: 0.82rem; font-weight: 700; border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                    <i class="fa-solid fa-location-crosshairs"></i> Pin My Current Location
+                  </button>
+                </div>
+              </div>
+
+              <!-- Validation Error Box -->
+              <div id="profileValidationMsg" style="display: none; padding: 12px 14px; border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 700; text-align: center; background: rgba(192,57,43,0.15); border: 1.5px solid rgba(192,57,43,0.5); color: #e07068;"></div>
+
+              <!-- Single Direct Database Save Button -->
+              <div style="margin-top: 6px;">
+                <button type="submit" class="btn-primary" id="btnSaveUserDetails" style="width: 100%; padding: 14px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 6px 20px rgba(100,116,139,0.35);">
+                  <i class="fa-solid fa-floppy-disk"></i> Save Profile to Database
+                </button>
+              </div>
+
+              <!-- Log Out Button in Profile Screen -->
+              <div style="margin-top: 4px;">
+                <button type="button" class="btn-primary" id="btnProfileLogout" style="width: 100%; padding: 13px; font-size: 0.92rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(192,57,43,0.15); border: 1.5px solid rgba(192,57,43,0.5); color: #e07068; box-shadow: 0 4px 15px rgba(192,57,43,0.2); transition: all 0.2s ease;">
+                  <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out of Account
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Dynamic Bottom Navigation Bar -->
+      <nav class="bottom-nav-bar" id="dynamicBottomNav">
+        <!-- Rendered dynamically in app.js -->
+      </nav>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 1: Charger Details Bottom Sheet
+       ======================================================================= -->
+  <div class="modal-overlay" id="chargerDetailModal">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <div>
+          <span id="modalRatePill" style="font-size: 0.75rem; font-weight: 700; background: rgba(22,163,74,0.15); color: var(--accent-emerald-light); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(22,163,74,0.3);">
+            ₹120.00 / hour
+          </span>
+          <h3 class="modal-title" id="modalStationTitle" style="margin-top: 6px;">Station Title</h3>
+        </div>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 34px; height: 34px; border-radius: 50%; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;" id="modalHostAvatar">
+            👨‍💼
+          </div>
+          <div>
+            <div id="modalHostName" style="font-weight: 700;">Host Name</div>
+            <div id="modalHostRating" style="font-size: 0.72rem; color: var(--accent-amber);">4.9 ★ (42 reviews)</div>
+          </div>
+        </div>
+        <div id="modalDistance" style="color: var(--accent-cyan-light); font-weight: 700;">1.2 km away</div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="telemetry-card" style="padding: 10px;">
+          <span class="telem-label">Socket / Plug</span>
+          <span id="modalConnector" style="font-size: 0.85rem; font-weight: 700;">Type 2 (AC)</span>
+        </div>
+        <div class="telemetry-card" style="padding: 10px;">
+          <span class="telem-label">Max Power</span>
+          <span id="modalPower" style="font-size: 0.85rem; font-weight: 700; color: var(--accent-cyan-light);">11.0 kW</span>
+        </div>
+        <div class="telemetry-card" style="padding: 10px;">
+          <span class="telem-label">Parking Access</span>
+          <span id="modalParkingType" style="font-size: 0.85rem; font-weight: 700;">Covered Driveway</span>
+        </div>
+        <div class="telemetry-card" style="padding: 10px;">
+          <span class="telem-label">Access Hours</span>
+          <span id="modalAccessHours" style="font-size: 0.85rem; font-weight: 700;">6 AM - 11 PM</span>
+        </div>
+      </div>
+
+      <!-- Charger Setup Photos Gallery -->
+      <div id="modalPhotosContainer" style="display: none; margin-bottom: 6px;">
+        <span class="form-label" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+          <span><i class="fa-solid fa-camera" style="color: var(--accent-emerald); margin-right: 5px;"></i> Verified Charger Photos</span>
+          <span id="modalPhotosBadge" style="font-size: 0.65rem; color: var(--accent-emerald-light); font-weight: 700; background: rgba(22,163,74,0.15); padding: 1px 6px; border-radius: 4px;">Host Verified</span>
+        </span>
+        <div id="modalPhotosList" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin;"></div>
+      </div>
+
+      <div>
+        <span class="form-label" style="display: block; margin-bottom: 4px;">Exact Address</span>
+        <div id="modalAddress" style="font-size: 0.82rem; color: var(--text-secondary); background: rgba(255, 255, 255, 0.04); padding: 8px 12px; border-radius: var(--radius-sm);">
+          42 Willow Creek Lane, Indiranagar
+        </div>
+      </div>
+
+      <div>
+        <span class="form-label" style="display: block; margin-bottom: 4px;">Host Amenities & Rules</span>
+        <div id="modalAmenities" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;"></div>
+        <div id="modalNotes" style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;"></div>
+      </div>
+
+      <div>
+        <span class="form-label" style="display: block; margin-bottom: 4px;">Community Driver Reviews</span>
+        <div id="modalReviewsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto;"></div>
+      </div>
+
+            <!-- Time-slot selector -->
+      <div id="slotPickerRow" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 14px; margin-top: 6px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Choose Your Slot</div>
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--accent-emerald-light);" id="slotHourlyRateBadge">₹120.00 / hour</div>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="slotBtnGroup">
+          <button class="slot-btn" data-minutes="1" style="border-color: var(--accent-amber); color: var(--accent-amber); font-weight: 700;">1 min (Test)</button>
+          <button class="slot-btn active" data-minutes="30">30 min</button>
+          <button class="slot-btn" data-minutes="60">1 hr</button>
+          <button class="slot-btn" data-minutes="120">2 hr</button>
+          <button class="slot-btn" data-minutes="180">3 hr</button>
+          <button class="slot-btn" data-minutes="240">4 hr</button>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <div>
+            <div style="font-size: 0.68rem; color: var(--text-muted);">Total (paid upfront)</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);" id="slotCostPreview">&#8212;</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.68rem; color: var(--text-muted);">Ends at</div>
+            <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);" id="slotEndsAtPreview">&#8212;</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 6px;">
+        <button class="btn-icon" id="btnStartNavigation" style="width: auto; padding: 0 14px; border-radius: var(--radius-md); font-weight: 700; font-size: 0.82rem; background: rgba(100,116,139,0.2); border-color: var(--accent-cyan);" title="Navigate">
+          <i class="fa-solid fa-diamond-turn-right" style="margin-right: 4px;"></i> Navigate
+        </button>
+        <button class="btn-primary" id="btnStartChargeFromModal" style="flex: 1;">
+          <i class="fa-solid fa-bolt"></i> Pay &amp; Start Session
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 2: Host Charger Wizard ("List a Charger")
+       ======================================================================= -->
+  <div class="modal-overlay" id="hostWizardModal">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title" id="hostWizardModalTitle">⚡ Add Charger Point & Profile</h3>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="hostChargerForm" style="display: flex; flex-direction: column; gap: 14px;">
+        <input type="hidden" id="hostFormChargerId">
+
+        <div class="form-group">
+          <label class="form-label">Station / Location Title</label>
+          <input type="text" id="hostFormTitle" class="form-input" placeholder="e.g., GreenVilla Home Wallbox" required>
+        </div>
+
+        <!-- Dedicated Charger Point Photos (Unique per Charger, Max 5) -->
+        <div class="form-group" style="background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <label class="form-label" style="margin-bottom: 2px; color: var(--accent-emerald-light); font-weight: 700; font-size: 0.8rem;">
+                <i class="fa-solid fa-camera" style="color: var(--accent-emerald); margin-right: 5px;"></i> Charger & Wallbox Photos
+              </label>
+              <div style="font-size: 0.68rem; color: var(--text-muted);">
+                Upload photos of this specific charger & socket (Up to 5 photos).
+              </div>
+            </div>
+            <span id="hostWizardPhotosCountBadge" style="font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); border: 1px solid var(--border-subtle);">
+              0 / 5 Photos (Min 3)
+            </span>
+          </div>
+
+          <!-- Upload Dropzone -->
+          <div id="hostWizardPhotoDropzone" style="border: 1.5px dashed rgba(22,163,74,0.35); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; background: rgba(22,163,74,0.03); cursor: pointer; transition: all 0.2s ease;">
+            <input type="file" id="hostWizardPhotoInput" accept="image/*" multiple style="display: none;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background: rgba(22,163,74,0.15); border: 1px solid rgba(22,163,74,0.3); display: flex; align-items: center; justify-content: center; color: var(--accent-emerald); font-size: 1rem;">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+              </div>
+              <div style="text-align: left;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+                  Tap to Upload Charger Photos
+                </div>
+                <div style="font-size: 0.67rem; color: var(--text-muted);">
+                  PNG, JPG, WebP • Min 3 required • Max 5 photos
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Photo Previews Grid -->
+          <div id="hostWizardPhotosGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 8px; margin-top: 2px;"></div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Host Name</label>
+            <input type="text" id="hostFormName" class="form-input" placeholder="Your Name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Rate Applied (₹ / hour)</span>
+              <span style="font-size: 0.68rem; color: var(--accent-emerald-light); font-weight: 700;">Rupees Per Hour</span>
+            </label>
+            <input type="number" id="hostFormRate" class="form-input" step="1" min="10" placeholder="e.g. 150" value="120.00" required>
+            <div style="display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;">
+              <button type="button" class="rate-preset-chip" onclick="document.getElementById('hostFormRate').value='80'" style="background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.25); color: var(--accent-emerald-light); border-radius: 4px; padding: 2px 7px; font-size: 0.68rem; cursor: pointer; font-weight: 600;">₹80/hr</button>
+              <button type="button" class="rate-preset-chip" onclick="document.getElementById('hostFormRate').value='120'" style="background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.25); color: var(--accent-emerald-light); border-radius: 4px; padding: 2px 7px; font-size: 0.68rem; cursor: pointer; font-weight: 600;">₹120/hr</button>
+              <button type="button" class="rate-preset-chip" onclick="document.getElementById('hostFormRate').value='150'" style="background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.25); color: var(--accent-emerald-light); border-radius: 4px; padding: 2px 7px; font-size: 0.68rem; cursor: pointer; font-weight: 600;">₹150/hr</button>
+              <button type="button" class="rate-preset-chip" onclick="document.getElementById('hostFormRate').value='200'" style="background: rgba(22,163,74,0.1); border: 1px solid rgba(22,163,74,0.25); color: var(--accent-emerald-light); border-radius: 4px; padding: 2px 7px; font-size: 0.68rem; cursor: pointer; font-weight: 600;">₹200/hr</button>
+            </div>
+            <div style="font-size: 0.67rem; color: var(--text-muted); margin-top: 3px;">
+              Hourly rate in rupees charged to drivers for parking &amp; charging.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label class="form-label" style="margin-bottom: 0;">Exact Street Address</label>
+            <button type="button" id="btnHostUseGpsLocation" style="background: rgba(22,163,74,0.15); border: 1px solid var(--accent-emerald); color: var(--accent-emerald-light); font-size: 0.7rem; font-weight: 700; padding: 3px 8px; border-radius: var(--radius-full); cursor: pointer;">
+              <i class="fa-solid fa-location-crosshairs"></i> Pin My Live GPS
+            </button>
+          </div>
+          <input type="text" id="hostFormAddress" class="form-input" placeholder="House/Building No., Street, Area" required>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Latitude</label>
+            <input type="number" id="hostFormLat" class="form-input" step="any" placeholder="e.g. 12.9716">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude</label>
+            <input type="number" id="hostFormLng" class="form-input" step="any" placeholder="e.g. 77.5946">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Plug / Connector Type</label>
+            <select id="hostFormConnector" class="form-select">
+              <option value="Type 2 (AC)">Type 2 (AC)</option>
+              <option value="CCS2 (Fast DC)">CCS2 (Fast DC)</option>
+              <option value="NACS / Tesla">NACS / Tesla</option>
+              <option value="16A Heavy Socket">16A 3-Pin Socket</option>
+              <option value="GB/T">GB/T</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Power Output (kW)
+              <span style="font-size: 0.67rem; color: var(--accent-amber-light); font-weight: 600; margin-left: 4px;">(Min 200W required)</span>
+            </label>
+            <select id="hostFormPower" class="form-select">
+              <option value="0.09">90 W (Standard Socket)</option>
+              <option value="0.12">120 W (Smart Socket)</option>
+              <option value="0.20" selected>200 W (Home Wallbox)</option>
+              <option value="0.22">220 W (AC Wall Charger)</option>
+              <option value="3.3">3.3 kW (Slow AC)</option>
+              <option value="7.4">7.4 kW (Wallbox)</option>
+              <option value="11.0">11.0 kW (3-Phase)</option>
+              <option value="22.0">22.0 kW (Fast AC)</option>
+              <option value="30.0">30.0 kW (DC Fast)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Parking Type</label>
+            <input type="text" id="hostFormParking" class="form-input" value="Private Driveway" placeholder="Driveway, Garage, Bay">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Access Hours</label>
+            <input type="text" id="hostFormAccess" class="form-input" value="6:00 AM - 10:00 PM" placeholder="e.g. 24/7 or 9AM-6PM">
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; margin: 4px 0;">
+          <input type="checkbox" id="hostFormSolar" style="width: 18px; height: 18px; accent-color: var(--accent-emerald);">
+          <label for="hostFormSolar" style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">
+            ☀️ Powered by Rooftop Solar Panel
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Host Instructions & Gate Code</label>
+          <textarea id="hostFormNotes" class="form-textarea" rows="2" placeholder="e.g., Ring bell for entry or gate intercom buzzer code is 1234."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary" id="btnHostFormSubmit" style="margin-top: 8px;">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Publish Charger to Community
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 3: Digital Itemized Invoice / Receipt
+       ======================================================================= -->
+  <div class="modal-overlay" id="invoiceModal">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">⚡ Charging Invoice</h3>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="receipt-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">VoltShare P2P</h3>
+            <p style="font-size: 0.72rem; color: #64748b;" id="recDate">Oct 2, 2026 • 06:45 PM</p>
+          </div>
+          <span style="background: rgba(239, 68, 68, 0.15); color: #ef4444; font-size: 0.75rem; font-weight: 800; padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3);" id="recStatusBadge">
+            DEBITED SUCCESSFUL
+          </span>
+        </div>
+
+        <hr>
+
+        <div class="receipt-row">
+          <span>Station:</span>
+          <strong id="recStationName" style="color: #0f172a;">GreenHaven Solar</strong>
+        </div>
+        <div class="receipt-row">
+          <span>Property Host:</span>
+          <span id="recHostName">Marcus Vance</span>
+        </div>
+        <div class="receipt-row">
+          <span>Energy Consumed:</span>
+          <strong id="recKwhConsumed" style="color: #059669; font-family: var(--font-mono);">12.40 kWh</strong>
+        </div>
+        <div class="receipt-row">
+          <span>Rate Applied:</span>
+          <span id="recRateApplied">₹120.00 / hour</span>
+        </div>
+        <div class="receipt-row">
+          <span>CO2 Emission Avoided:</span>
+          <span id="recCo2Saved" style="color: #059669; font-weight: 600;">5.2 kg</span>
+        </div>
+
+        <hr>
+
+        <div class="receipt-row">
+          <span>Energy Subtotal:</span>
+          <span id="recSubtotal">₹179.80</span>
+        </div>
+        <div class="receipt-row">
+          <span>Platform & Network Fee (5%):</span>
+          <span id="recPlatformFee">₹8.99</span>
+        </div>
+
+        <hr>
+
+        <div class="receipt-row total">
+          <span>Grand Total:</span>
+          <span id="recGrandTotal" style="color: #ef4444; font-family: var(--font-mono); font-weight: 800;">-₹188.79</span>
+        </div>
+
+        <div class="receipt-barcode"></div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-primary" id="btnOpenReviewFromReceipt" style="background: linear-gradient(135deg, var(--accent-cyan) 0%, #0284c7 100%);">
+          <i class="fa-solid fa-star"></i> Rate Host
+        </button>
+        <button class="btn-primary" id="btnInvoiceDone" onclick="if (window.app) window.app.onInvoiceDone(); else document.getElementById('invoiceModal').classList.remove('active');">
+          <i class="fa-solid fa-check"></i> Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 4: Driver Rating & Review Modal
+       ======================================================================= -->
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">⭐ Rate Your Charging Experience</h3>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="text-align: center; margin: 10px 0;">
+          <div style="font-size: 2rem; color: var(--accent-amber); cursor: pointer;" id="starRatingContainer">
+            ★★★★★
+          </div>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Tap stars to rate host & charging speed</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Your Feedback / Review</label>
+          <textarea id="reviewTextInput" class="form-textarea" rows="3" placeholder="How was the charger access, speed, and parking space?"></textarea>
+        </div>
+
+        <button class="btn-primary" id="btnSubmitReview">
+          <i class="fa-solid fa-paper-plane"></i> Submit Community Review
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 5: Switch Role / Persona Bottom Sheet
+       ======================================================================= -->
+  <div class="modal-overlay" id="roleSwitchModal">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">Profile & Mode Settings</h3>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="demo-pill-btn" id="btnModalSwitchToDriver" style="padding: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.3rem;">🚗</span>
+            <div style="text-align: left;">
+              <strong>Switch to EV Driver Mode</strong>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Find nearby chargers & charge vehicle</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <button class="demo-pill-btn" id="btnModalSwitchToHost" style="padding: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.3rem;">🏠</span>
+            <div style="text-align: left;">
+              <strong>Switch to Charger Host Mode</strong>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Manage your wallbox & view revenue</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <!-- Theme Toggle Row in Modal -->
+        <button class="demo-pill-btn theme-toggle-btn" id="btnModalToggleTheme" style="padding: 12px; border-color: rgba(100,116,139,0.3);">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.2rem;" id="modalThemeEmoji">🌙</span>
+            <div style="text-align: left;">
+              <strong id="modalThemeTitle">Switch to Light Theme</strong>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Toggle dark / light appearance</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-sun" id="modalThemeIcon" style="color: var(--accent-amber);"></i>
+        </button>
+
+        <!-- Visit Home Page from Modal -->
+        <button class="demo-pill-btn" id="btnModalGoToHome" style="padding: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.2rem;">⚡</span>
+            <div style="text-align: left;">
+              <strong>VoltShare Home / Features</strong>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">View hero showcase & stats</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i>
+        </button>
+
+        <!-- My Profile Button in Modal -->
+        <button class="demo-pill-btn" id="btnModalOpenProfile" style="padding: 12px; border-color: rgba(100,116,139,0.4);">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 1.2rem;">👤</span>
+            <div style="text-align: left;">
+              <strong style="color: var(--accent-cyan-light);">My Profile & Vehicle Specs</strong>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Edit name, EV battery, plate, host UPI</div>
+            </div>
+          </div>
+          <i class="fa-solid fa-pen-to-square" style="color: var(--accent-cyan); font-size: 0.85rem;"></i>
+        </button>
+
+        <button class="demo-pill-btn" id="btnLogOut" style="padding: 12px; border-color: rgba(192,57,43,0.4); color: #e07068; justify-content: center; gap: 8px;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out of Account
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 6: Google Maps API Key & Engine Config Modal
+       ======================================================================= -->
+  <div class="modal-overlay" id="gmapsConfigModal">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <div>
+          <span class="brand-tag" style="background: rgba(100,116,139,0.2); color: var(--accent-cyan-light); border-color: rgba(100,116,139,0.4);">
+            Map Provider
+          </span>
+          <h3 class="modal-title" style="margin-top: 4px;">🗺️ Google Maps Integration</h3>
+        </div>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.4;">
+          Connect your <strong>Google Maps JavaScript API Key</strong> to unlock Google Vector Dark Maps, Live Traffic, and Satellite view.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Google Maps API Key (AIza...)</label>
+          <input type="text" id="gmapsApiKeyInput" class="form-input" placeholder="Paste your Google Maps API Key here (e.g. AIzaSy...)" value="">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-primary" id="btnSaveGoogleMapsKey">
+            <i class="fa-solid fa-floppy-disk"></i> Save Google Key
+          </button>
+          <button class="btn-primary" id="btnResetToLeaflet" style="background: rgba(22,163,74,0.18); border: 1px solid var(--accent-emerald); color: var(--accent-emerald-light);" title="Use Free OpenStreetMap">
+            <i class="fa-solid fa-map"></i> Use Free OSM
+          </button>
+        </div>
+
+        <div style="background: rgba(100,116,139,0.06); border: 1px dashed rgba(100,116,139,0.3); border-radius: var(--radius-md); padding: 12px; font-size: 0.73rem; color: var(--text-secondary);">
+          <strong style="color: var(--accent-cyan-light); display: block; margin-bottom: 4px;">💡 How to get a free Google Maps API Key:</strong>
+          1. Go to <a href="https://console.cloud.google.com/google/maps-apis/credentials" target="_blank" style="color: var(--accent-cyan); text-decoration: underline;">Google Cloud Console &rarr; Maps API</a>.<br>
+          2. Enable <strong>Maps JavaScript API</strong> and <strong>Places API</strong>.<br>
+          3. Click <strong>Credentials &rarr; Create Credentials &rarr; API Key</strong> and paste it above!
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 7: Notifications Center Drawer / Modal
+       ======================================================================= -->
+  <div class="modal-overlay" id="notificationsModal">
+    <div class="modal-bottom-sheet" style="max-height: 80vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="brand-tag" style="background: rgba(100,116,139,0.2); color: var(--accent-cyan-light); border-color: rgba(100,116,139,0.4);">
+            Live Feed
+          </span>
+          <h3 class="modal-title">🔔 Notifications</h3>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button id="btnClearAllNotifs" style="background: none; border: none; color: var(--text-muted); font-size: 0.72rem; cursor: pointer; text-decoration: underline; font-weight: 600;">Clear All</button>
+          <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <div id="notificationsList" class="notifications-scroll-list" style="overflow-y: auto; max-height: 55vh; display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <!-- Dynamic notification items or empty state -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 8: Top Up Balance & UPI / GPay Bank QR Payment Modal
+       ======================================================================= -->
+  <div class="modal-overlay" id="topUpWalletModal">
+    <div class="modal-bottom-sheet" style="max-height: 90vh; overflow-y: auto; padding: 20px 20px 32px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="brand-tag" style="background: rgba(22,163,74,0.2); color: var(--accent-emerald-light); border-color: rgba(22,163,74,0.4);">
+            <i class="fa-solid fa-shield-halved"></i> Instant & Secure
+          </span>
+          <h3 class="modal-title">Top Up Wallet Balance</h3>
+        </div>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- 1. Amount Selection Section -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">
+            <i class="fa-solid fa-wallet" style="color: var(--accent-cyan); margin-right: 4px;"></i> Select Amount
+          </span>
+          <span style="font-size: 0.75rem; color: var(--text-muted);">
+            Current: <strong style="color: var(--text-primary);" id="topUpModalCurrentBalance">₹1,500.00</strong>
+          </span>
+        </div>
+
+        <!-- Preset Amount Chips -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;" id="topUpAmountChips">
+          <button type="button" class="topup-amount-chip" data-amount="200">+₹200</button>
+          <button type="button" class="topup-amount-chip active" data-amount="500">+₹500</button>
+          <button type="button" class="topup-amount-chip" data-amount="1000">+₹1,000</button>
+          <button type="button" class="topup-amount-chip" data-amount="2000">+₹2,000</button>
+        </div>
+
+        <!-- Custom Amount Input -->
+        <div style="position: relative;">
+          <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.15rem; font-weight: 800; color: var(--accent-emerald-light); font-family: var(--font-mono); pointer-events: none;">₹</span>
+          <input type="number" id="topUpCustomAmount" class="form-input" style="padding-left: 34px; font-size: 1.15rem; font-weight: 800; font-family: var(--font-mono); width: 100%;" value="500" min="10" max="50000" step="50" placeholder="Enter custom amount">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem; padding-top: 4px; border-top: 1px dashed var(--border-subtle);">
+          <span style="color: var(--text-muted);">New Wallet Balance After Top-Up:</span>
+          <strong style="color: var(--accent-emerald-light); font-family: var(--font-mono); font-size: 0.85rem;" id="topUpModalNewBalance">₹2,000.00</strong>
+        </div>
+      </div>
+
+      <!-- 2. Payment Method Switcher Tabs -->
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">
+          <i class="fa-solid fa-credit-card" style="color: var(--accent-amber); margin-right: 4px;"></i> Choose Payment Option
+        </span>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <!-- Option A: UPI ID -->
+          <button type="button" class="payment-option-btn active" id="btnSelectUpiOption">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.25rem;">📱</span>
+              <div style="text-align: left;">
+                <strong style="display: block; font-size: 0.85rem;">UPI ID</strong>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Collect Request</span>
+              </div>
+            </div>
+            <i class="fa-solid fa-circle-check payment-check-icon" id="iconUpiCheck" style="color: var(--accent-emerald); font-size: 0.9rem;"></i>
+          </button>
+
+          <!-- Option B: GPay & Bank QR -->
+          <button type="button" class="payment-option-btn" id="btnSelectGpayOption">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.25rem;">⚡</span>
+              <div style="text-align: left;">
+                <strong style="display: block; font-size: 0.85rem; color: #4285F4;">Google Pay (GPay)</strong>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Bank QR Code Scan</span>
+              </div>
+            </div>
+            <i class="fa-solid fa-circle-check payment-check-icon" id="iconGpayCheck" style="display: none; color: var(--accent-emerald); font-size: 0.9rem;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- TAB VIEW 1: UPI ID / Collect Request View -->
+      <div id="topUpUpiSection" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">Enter Virtual Payment Address (UPI ID)</label>
+          <input type="text" id="topUpUpiIdInput" class="form-input" placeholder="e.g. driver@okhdfcbank" value="driver@okhdfcbank">
+        </div>
+
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span style="font-size: 0.7rem; color: var(--text-muted); align-self: center; margin-right: 4px;">Handle:</span>
+          <button type="button" class="quick-handle-tag" data-handle="@okhdfcbank">@okhdfcbank</button>
+          <button type="button" class="quick-handle-tag" data-handle="@oksbi">@oksbi</button>
+          <button type="button" class="quick-handle-tag" data-handle="@okicici">@okicici</button>
+          <button type="button" class="quick-handle-tag" data-handle="@paytm">@paytm</button>
+          <button type="button" class="quick-handle-tag" data-handle="@ybl">@ybl</button>
+        </div>
+
+        <div style="background: rgba(100,116,139,0.08); border: 1px solid rgba(100,116,139,0.2); border-radius: var(--radius-md); padding: 12px; font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 10px; align-items: center;">
+          <i class="fa-solid fa-mobile-screen-button" style="font-size: 1.2rem; color: var(--accent-cyan);"></i>
+          <div>
+            A UPI collect request for <strong style="color: var(--text-primary);" id="topUpUpiSummaryAmount">₹500.00</strong> will be triggered to your UPI app.
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" id="btnExecuteUpiPayment" style="width: 100%; padding: 14px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(100,116,139,0.35);">
+          <i class="fa-solid fa-paper-plane"></i> Send UPI Payment Request
+        </button>
+      </div>
+
+        <!-- Safety Guarantee Badge -->
+        <div style="background: rgba(22,163,74,0.12); border: 1px solid rgba(22,163,74,0.3); border-radius: var(--radius-md); padding: 8px 12px; font-size: 0.73rem; color: var(--accent-emerald-light); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-shield-halved" style="font-size: 1rem;"></i>
+          <span><strong>100% Safe Simulation:</strong> No real bank debit or real money transfer will occur.</span>
+        </div>
+
+        <!-- QR Code Display Card -->
+        <div style="background: var(--bg-card); border: 1px solid rgba(66, 133, 244, 0.35); border-radius: var(--radius-xl); padding: 18px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; box-shadow: var(--shadow-md);">
+          
+          <div style="display: flex; align-items: center; gap: 6px; background: rgba(66, 133, 244, 0.15); border: 1px solid rgba(66, 133, 244, 0.3); padding: 4px 12px; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 700; color: #94a3b8;">
+            <i class="fa-brands fa-google" style="font-size: 0.85rem; color: #4285F4;"></i> VoltShare EV Official QR Code
+          </div>
+
+          <!-- Dynamic QR Container -->
+          <div style="position: relative; background: #ffffff; padding: 12px; border-radius: 18px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 220px; height: 220px;">
+            <div id="gpayQrCodeContainer" style="width: 196px; height: 196px; display: flex; align-items: center; justify-content: center;">
+              <!-- QR Code image / SVG rendered dynamically with VoltShare account string -->
+            </div>
+            <!-- Center GPay / VoltShare Badge -->
+            <div style="position: absolute; width: 38px; height: 38px; background: var(--bg-secondary); border: 2.5px solid var(--border-subtle); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm);">
+              <span style="font-size: 1.1rem; color: var(--accent-emerald-light); font-weight: 900;">⚡</span>
+            </div>
+          </div>
+
+          <div style="font-size: 0.76rem; color: var(--text-secondary); max-width: 290px; line-height: 1.4;">
+            Scanning this QR code identifies <strong>VoltShare Official EV Account</strong> to simulate crediting <strong style="color: var(--accent-emerald-light); font-size: 0.9rem;" id="topUpGpayQrAmountDisplay">₹500.00</strong> to your wallet.
+          </div>
+
+          <!-- Bank & Account Information Box -->
+          <div style="width: 100%; background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.76rem; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+              <span style="color: var(--text-muted);"><i class="fa-solid fa-building" style="margin-right: 4px; color: var(--accent-cyan);"></i> Official Account:</span>
+              <strong style="color: var(--text-primary);" id="gpayPayeeName">VoltShare Official EV Account</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+              <span style="color: var(--text-muted);"><i class="fa-solid fa-building-columns" style="margin-right: 4px; color: var(--accent-amber);"></i> Gateway Node:</span>
+              <strong style="color: var(--text-primary); font-family: var(--font-mono);" id="gpayBankAccount">VoltShare Reserve Pool (Sandbox)</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="color: var(--text-muted);"><i class="fa-solid fa-qrcode" style="margin-right: 4px; color: var(--accent-emerald-light);"></i> Account Handle:</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: var(--accent-cyan-light); font-family: var(--font-mono); font-weight: 700; font-size: 0.75rem;" id="gpayUpiIdText">voltshare.ev@sandbox</span>
+                <button type="button" id="btnCopyGpayUpi" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 4px; color: var(--text-primary); font-size: 0.68rem; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="Copy Handle">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Confirmation Button -->
+        <button type="button" class="btn-primary" id="btnConfirmGpayPayment" style="width: 100%; padding: 14px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #16a34a 0%, #059669 100%); box-shadow: 0 6px 20px rgba(22,163,74,0.35);">
+          <i class="fa-solid fa-circle-check"></i> Simulate GPay Scan &rarr; Add to Wallet Balance
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- =======================================================================
+       MODAL 9: Point Reservation Bottom Sheet (+₹30/hr)
+       ======================================================================= -->
+  <div class="modal-overlay" id="reservePointModal">
+    <div class="modal-bottom-sheet" style="max-height: 85vh; overflow-y: auto; padding: 20px 20px 30px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="brand-tag" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-amber); border-color: rgba(245, 158, 11, 0.4);">
+            <i class="fa-solid fa-clock"></i> Hold & Lock Bay
+          </span>
+          <h3 class="modal-title">Reserve Charging Point</h3>
+        </div>
+        <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Station Summary Card -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h4 id="reserveModalStationTitle" style="font-size: 1rem; font-weight: 800;">Station Title</h4>
+            <p id="reserveModalAddress" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">Address</p>
+          </div>
+          <span id="reserveModalRate" style="font-size: 0.75rem; font-weight: 700; color: var(--accent-emerald-light); background: rgba(22,163,74,0.15); padding: 3px 8px; border-radius: 4px;">₹120.00 / hour</span>
+        </div>
+        <div style="display: flex; gap: 12px; font-size: 0.73rem; color: var(--text-secondary); border-top: 1px solid var(--border-subtle); padding-top: 8px;">
+          <span><i class="fa-solid fa-plug" style="color: var(--accent-cyan);"></i> <span id="reserveModalConnector">Type 2 (AC)</span></span>
+          <span><i class="fa-solid fa-bolt" style="color: var(--accent-amber);"></i> <span id="reserveModalPower">11.0 kW</span></span>
+        </div>
+      </div>
+
+      <!-- Reservation Duration Selection -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span class="form-label" style="font-size: 0.78rem; font-weight: 700;">Select Reservation Duration</span>
+          <span style="font-size: 0.74rem; color: var(--accent-amber); font-weight: 700;">₹30.00 / hour hold</span>
+        </div>
+
+        <!-- Duration Quick Chips -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;" id="reserveDurationChips">
+          <button type="button" class="topup-amount-chip active" data-hours="1">1 Hour (+₹30)</button>
+          <button type="button" class="topup-amount-chip" data-hours="2">2 Hours (+₹60)</button>
+          <button type="button" class="topup-amount-chip" data-hours="3">3 Hours (+₹90)</button>
+        </div>
+      </div>
+
+      <!-- Fee Breakdown Card -->
+      <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 8px; font-size: 0.78rem;">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Reservation Holding Rate:</span>
+          <span>₹30.00 / hr</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Duration Selected:</span>
+          <strong id="reserveModalDurationText">1 Hour (60 mins)</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px dashed var(--border-subtle); padding-top: 8px;">
+          <span style="font-weight: 700; color: var(--text-primary);">Total Reservation Fee to Pay:</span>
+          <strong style="color: var(--accent-amber); font-size: 1.1rem; font-family: var(--font-mono);" id="reserveModalTotalFee">₹30.00</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border-subtle); padding-top: 8px; font-size: 0.74rem;">
+          <span style="color: var(--text-muted);">Current Wallet Balance:</span>
+          <span id="reserveModalWalletBalance" style="font-weight: 700; color: var(--accent-cyan-light);">₹1,500.00</span>
+        </div>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: var(--radius-md); padding: 10px 12px; font-size: 0.73rem; color: var(--text-secondary); display: flex; gap: 8px; align-items: center;">
+        <i class="fa-solid fa-circle-info" style="color: var(--accent-amber); font-size: 1rem;"></i>
+        <span>The charger bay will be locked & held exclusively for you. Arrive during your booked time and tap <strong>Plug In & Start</strong>!</span>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 4px;">
+        <button class="btn-primary" id="btnConfirmReservation" style="width: 100%; padding: 14px; font-size: 0.95rem; font-weight: 800; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="fa-solid fa-lock"></i> Pay ₹30.00 & Lock Bay
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL 10: EV Vehicle Database Catalog Picker Modal
+       ======================================================================= -->
+  <div class="modal-overlay" id="vehiclePickerModal">
+    <div class="modal-bottom-sheet" style="max-height: 82vh; display: flex; flex-direction: column; padding: 20px 20px 24px;">
+      <div class="modal-header" style="padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="vehicleModalCategoryBadge" class="brand-tag" style="background: rgba(100,116,139,0.2); color: var(--accent-cyan); border-color: rgba(100,116,139,0.4);">
+            <i class="fa-solid fa-car"></i> Vehicle Catalog
+          </span>
+          <h3 class="modal-title" id="vehicleModalTitle" style="font-size: 1.05rem;">Choose EV Model</h3>
+        </div>
+        <button class="btn-close-modal" id="btnCloseVehicleModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div style="padding: 10px 0 6px;">
+        <div style="position: relative;">
+          <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
+          <input type="text" id="vehicleSearchInput" class="form-input" placeholder="Search brand or model (e.g. Nexon, Ather, Mercedes, Ola...)" style="padding-left: 36px; font-size: 0.82rem; background: rgba(0,0,0,0.3);">
+        </div>
+      </div>
+
+      <!-- Vehicle Catalog List Container (Scrollable inside modal) -->
+      <div id="vehicleDbListContainer" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; max-height: 52vh; margin-top: 4px;">
+        <!-- Vehicle cards injected dynamically via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       MODAL 11: Photo Gallery Slideshow Lightbox
+       ======================================================================= -->
+  <div class="modal-overlay" id="photoSlideshowModal">
+    <div class="slideshow-dialog">
+      <!-- Header -->
+      <div class="slideshow-header">
+        <div>
+          <span style="font-size: 0.68rem; font-weight: 800; color: var(--accent-emerald-light); text-transform: uppercase; letter-spacing: 0.08em; display: block;">
+            <i class="fa-solid fa-camera" style="margin-right: 4px;"></i> Verified Charger Photos
+          </span>
+          <h4 id="slideshowTitle" style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-top: 2px;">Charger Photo</h4>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="slideshowCounterBadge" style="font-size: 0.72rem; font-weight: 800; background: rgba(255,255,255,0.1); color: #4ade80; padding: 4px 10px; border-radius: 20px; font-family: var(--font-mono); border: 1px solid rgba(22,163,74,0.3);">
+            1 / 3
+          </span>
+          <button id="btnSlideshowOpenTab" title="Open full photo in new tab" onclick="window.app && window.app.openSlideshowPhotoInNewTab()" style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</button>
+          <button id="btnSlideshowAutoplay" class="btn-icon" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Toggle Slideshow Autoplay">
+            <i class="fa-solid fa-play" id="slideshowPlayIcon" style="font-size: 0.75rem;"></i>
+          </button>
+          <button id="btnCloseSlideshow" style="width: 32px; height: 32px; border-radius: 50%; background: rgba(192,57,43,0.2); border: 1px solid rgba(192,57,43,0.4); color: #f0a49e; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="Close Slideshow (Esc)">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stage with Left / Right Arrows -->
+      <div class="slideshow-stage">
+        <button class="slideshow-nav-btn prev-btn" id="btnSlideshowPrev" title="Previous Photo (←)">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <img id="slideshowActiveImg" src="" alt="Charger Photo">
+
+        <button class="slideshow-nav-btn next-btn" id="btnSlideshowNext" title="Next Photo (→)">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Bottom Thumbnail Carousel -->
+      <div class="slideshow-footer">
+        <div class="slideshow-thumbnails-track" id="slideshowThumbnailsTrack"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet Maps Script (Fallback & Offline Supported) -->
+
+  <!-- =======================================================================
+       MODAL 12: Host Earnings Withdrawal Modal
+       ======================================================================= -->
+  <div class="modal-overlay" id="hostWithdrawModal">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">💸 Withdraw Host Earnings</h3>
+        <button class="btn-close-modal" id="btnCloseWithdrawModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div style="background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.25); border-radius: var(--radius-md); padding: 14px; margin-bottom: 12px; text-align: center;">
+        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Earned Balance</div>
+        <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-emerald-light); font-family: var(--font-mono); margin: 4px 0;" id="withdrawAvailableBalance">₹2,840.50</div>
+        <div style="font-size: 0.68rem; color: var(--text-muted);">Direct instant transfer to your verified Bank Account or UPI VPA</div>
+      </div>
+
+      <form id="hostWithdrawForm" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">Withdrawal Amount (₹)</label>
+          <input type="number" id="hostWithdrawAmount" class="form-input" min="10" step="1" placeholder="Enter amount to withdraw" required>
+          <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+            <button type="button" class="rate-preset-chip" onclick="window.app && window.app.setWithdrawAmount(500)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 4px; padding: 3px 8px; font-size: 0.7rem; cursor: pointer;">₹500</button>
+            <button type="button" class="rate-preset-chip" onclick="window.app && window.app.setWithdrawAmount(1000)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 4px; padding: 3px 8px; font-size: 0.7rem; cursor: pointer;">₹1,000</button>
+            <button type="button" class="rate-preset-chip" onclick="window.app && window.app.setWithdrawAmount(2000)" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: var(--text-primary); border-radius: 4px; padding: 3px 8px; font-size: 0.7rem; cursor: pointer;">₹2,000</button>
+            <button type="button" class="rate-preset-chip" onclick="window.app && window.app.setWithdrawAmount('all')" style="background: rgba(22,163,74,0.15); border: 1px solid var(--accent-emerald); color: var(--accent-emerald-light); border-radius: 4px; padding: 3px 8px; font-size: 0.7rem; cursor: pointer; font-weight: 700;">Withdraw All</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Payout Method</label>
+          <select id="hostWithdrawMethod" class="form-select">
+            <option value="upi">Instant UPI (Google Pay / PhonePe / BHIM)</option>
+            <option value="bank">Direct Bank Transfer (IMPS / NEFT)</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="groupWithdrawUpi">
+          <label class="form-label">UPI ID (VPA)</label>
+          <input type="text" id="hostWithdrawUpi" class="form-input" placeholder="e.g. host@okhdfcbank" value="marcus.host@okhdfcbank">
+        </div>
+
+        <button type="submit" class="btn-primary" style="margin-top: 6px; padding: 12px; font-size: 0.85rem; font-weight: 700; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);">
+          <i class="fa-solid fa-arrow-up-from-bracket"></i> Transfer to Bank / UPI
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Report Session -->
+  <div class="modal-overlay" id="reportSessionModal">
+    <div class="modal-bottom-sheet" style="max-height:88vh;overflow-y:auto;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-flag" style="color:#ef4444;margin-right:6px;"></i> Report Session</h3>
+        <button class="btn-close-modal" id="btnCloseReportModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="reportModalContext" style="background:rgba(255,255,255,0.03);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:16px;font-size:0.78rem;color:var(--text-muted);"></div>
+      <form id="reportSessionForm" style="display:flex;flex-direction:column;gap:16px;">
+        <input type="hidden" id="reportSessionId">
+        <input type="hidden" id="reportHostId">
+        <input type="hidden" id="reportDriverName">
+        <input type="hidden" id="reportChargerName">
+        <div class="form-group">
+          <label class="form-label" style="font-size:0.82rem;font-weight:700;">What is the issue? <span style="color:#ef4444;">*</span></label>
+          <textarea id="reportIssueText" class="form-input" rows="5" placeholder="Describe what happened — e.g. driver damaged the socket, left without unplugging, suspicious activity..." style="resize:vertical;min-height:110px;font-size:0.82rem;line-height:1.5;" required></textarea>
+        </div>
+        <div class="form-group">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <label class="form-label" style="font-size:0.82rem;font-weight:700;margin-bottom:0;">Submit the proof</label>
+            <span id="reportVideoFilename" style="font-size:0.68rem;color:var(--accent-emerald-light);font-weight:600;"></span>
+          </div>
+          <div id="reportVideoDropzone" style="border:1.5px dashed rgba(100,116,139,0.4);border-radius:var(--radius-sm);padding:20px 14px;text-align:center;background:rgba(255,255,255,0.02);cursor:pointer;transition:all 0.2s ease;" onclick="document.getElementById('reportVideoFileInput').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent-emerald)';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault();this.style.borderColor='';window.app&&window.app.handleReportVideoFile(event.dataTransfer.files[0]);">
+            <input type="file" id="reportVideoFileInput" accept="video/*,image/*" style="display:none;" onchange="window.app&&window.app.handleReportVideoFile(this.files[0])">
+            <i class="fa-solid fa-video" style="font-size:1.5rem;color:var(--text-muted);opacity:0.45;display:block;margin-bottom:8px;"></i>
+            <div style="font-size:0.78rem;font-weight:600;color:var(--text-primary);">Tap to upload video or photo</div>
+            <div style="font-size:0.68rem;color:var(--text-muted);margin-top:3px;">MP4, WebM, MOV, JPG, PNG — Max 50 MB (MP4 recommended)</div>
+          </div>
+          <div id="reportVideoPreview" style="display:none;margin-top:8px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border-subtle);"></div>
+        </div>
+        <button type="submit" id="btnSubmitReport" class="btn-primary" style="padding:13px;font-size:0.85rem;font-weight:700;background:linear-gradient(135deg,#dc2626 0%,#b91c1c 100%);border:none;border-radius:var(--radius-md);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <i class="fa-solid fa-paper-plane"></i> Submit Report
+        </button>
+      </form>
+    </div>
+  </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Firebase SDK (Authentication & Realtime Cloud Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <!-- Supabase Cloud Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Application Logic Scripts -->
+  <script src="config.js"></script>
+  <script src="data.js"></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>

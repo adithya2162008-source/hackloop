@@ -1,0 +1,25 @@
+{
+  "appId": "com.voltshare.evcharge",
+  "appName": "VoltShare",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true,
+    "overrideUserAgent": "Mozilla/5.0 (Linux; Android 14; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+  },
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "731648245258-vavo5f3772962rsdknjgh3qho6rvmdfv.apps.googleusercontent.com",
+      "androidClientId": "731648245258-2kpc8t00abg9hqoge7kst3vsqh3ao9dn.apps.googleusercontent.com",
+      "clientId": "731648245258-vavo5f3772962rsdknjgh3qho6rvmdfv.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": false
+    }
+  }
+}

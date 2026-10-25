@@ -1,0 +1,26 @@
+{
+  "name": "voltshare-ev-charge",
+  "version": "2.4.0",
+  "description": "VoltShare - Community EV Charging Network Android Application",
+  "main": "index.html",
+  "scripts": {
+    "build:www": "node scripts/prepare-www.js",
+    "cap:sync": "node scripts/prepare-www.js && cap sync",
+    "cap:build": "node scripts/prepare-www.js && cap sync && cd android && gradlew assembleDebug",
+    "cap:open": "cap open android"
+  },
+  "keywords": [
+    "ev-charging",
+    "capacitor",
+    "android",
+    "voltshare"
+  ],
+  "author": "VoltShare Team",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^6.2.2",
+    "@capacitor/cli": "^6.2.2",
+    "@capacitor/core": "^6.2.2",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4"
+  }
+}
