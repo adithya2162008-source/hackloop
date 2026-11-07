@@ -1,0 +1,37 @@
+# Environment variables
+.env
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Package files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Node modules
+node_modules/
+
+# Build files
+.DS_Store
+dist/
+build/
